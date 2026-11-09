@@ -20,3 +20,7 @@ All text lives in `js/content.js` (units, quizzes, activity cards, forms, glossa
 
 ## Run locally
 Serve the folder with any static server, e.g. `npx serve .`, then open the printed URL.
+
+## Look: Wilds edition (current)
+Black and ivory editorial pages, brush headings (Kaushan Script, SIL OFL 1.1; Permanent Marker, Apache 2.0, both bundled in `fonts/`), cyan and lime for navigation and progress, and six painted stage images in `assets/wilds/` (WebP at 960 and 1600 px wide, with a JPEG fallback). The site works offline: open `index.html` directly.
+The previous "Midnight" look is tagged `v2-midnight`.

@@ -105,14 +105,27 @@ function shell(main, { hideBar = false } = {}) {
     <footer class="foot"><p>IAU Office of Astronomy for Development · Astronomy for Mental Health. Your progress and notes are stored only in this browser. This course trains reflective facilitation; it is not clinical training.</p></footer>`;
 }
 
+/* ---------- painted stage art (Spark's Wilds images, one per stage) ---------- */
+const ART = ['00-start', '01-foundations', '02-safety', '03-practice', '04-context', '05-go'];
+function pic(stage, { lazy = true, sizes = '(max-width: 960px) 100vw, 1200px' } = {}) {
+  const n = ART[stage] || ART[0], b = 'assets/wilds/' + n;
+  return `<picture><source type="image/webp" srcset="${b}-960.webp 960w, ${b}.webp 1600w" sizes="${sizes}"><img src="${b}.jpg" width="1600" height="900" alt="" decoding="async" ${lazy ? 'loading="lazy"' : 'fetchpriority="high"'}></picture>`;
+}
+
 /* ---------- pages ---------- */
 function welcome() {
   return shell(`
     <section class="hero">
-      <p class="eyebrow">Self-guided · about 3½–4 hours · in units of 15 minutes or less</p>
-      <h1>Learn to guide safe, sky-based reflection.</h1>
-      <p class="lede">A step-by-step course for people who know the sky and want to use it to support wellbeing. It is built on ACT (Acceptance and Commitment Therapy) and trauma-informed practice.</p>
-      <ol class="hero-stages">${C.STAGES.map(s => `<li><span>${s.id}</span><b>${esc(s.title)}</b><small>${esc(s.blurb)}</small></li>`).join('')}</ol>
+      <div class="hero-art">${pic(0, { lazy: false, sizes: '100vw' })}</div>
+      <div class="hero-copy">
+        <p class="eyebrow">A self-guided facilitator course</p>
+        <p class="display">Look up.</p>
+        <h1>Learn to guide safe, sky-based reflection.</h1>
+        <p class="lede">For people who know the sky and want to use it to support wellbeing. Built on ACT (Acceptance and Commitment Therapy) and trauma-informed practice. About 3½–4 hours, in units of 15 minutes or less.</p>
+      </div>
+    </section>
+    <section class="strip" aria-label="The six stages">
+      ${C.STAGES.map(s => `<figure class="frag">${pic(s.id)}<figcaption><span class="frag-n">0${s.id}</span><b>${esc(s.title)}</b><small>${esc(s.blurb)}</small></figcaption></figure>`).join('')}
     </section>
     <section class="panel">
       <h2>Choose your track</h2>
@@ -149,6 +162,7 @@ function home() {
     const current = n && n.stage === s.id;
     return `<li class="stage ${complete ? 'complete' : ''} ${current ? 'current' : ''} ${unlocked ? '' : 'locked'}">
       <div class="stage-head">
+        <div class="stage-art">${pic(s.id)}</div>
         <span class="stage-num">${complete ? I.done : unlocked ? s.id : I.lock}</span>
         <div><h3>Stage ${s.id} · ${esc(s.title)}</h3><p>${esc(s.blurb)}</p>
         ${!unlocked ? `<p class="small muted">Unlocks after Stage ${s.id - 1} is complete.</p>` : ''}</div>
@@ -165,7 +179,7 @@ function home() {
     <div class="home-grid">
       <section>
         ${done ? `<div class="panel done-panel"><h2>You have completed the course.</h2><p>Keep Session mode handy for your next session, and download your plan from My plan.</p><a class="btn btn-primary" href="#/record">View completion record</a></div>`
-          : `<div class="panel next-panel"><p class="eyebrow">Next up</p><h2>${esc(n.id)} ${esc(n.title)}</h2><p>${esc(n.intro || '')}</p><a class="btn btn-primary" href="#/u/${n.id}">${units().some(isDone) ? 'Continue' : 'Begin'} ${I.arrow}</a></div>`}
+          : `<div class="panel next-panel"><div class="banner-art">${pic(n.stage, { lazy: false })}</div><p class="eyebrow">Next up · Stage ${n.stage} · ${esc(C.STAGES[n.stage].title)}</p><h2>${esc(n.id)} ${esc(n.title)}</h2><p>${esc(n.intro || '')}</p><a class="btn btn-primary" href="#/u/${n.id}">${units().some(isDone) ? 'Continue' : 'Begin'} ${I.arrow}</a></div>`}
         <h2 class="section-h">Your path <span class="muted small">· ${esc(C.TRACKS[S.track].label)} track</span></h2>
         <ol class="stages">${stages}</ol>
       </section>
@@ -267,6 +281,7 @@ function unitPage(id, step) {
       : `<a class="btn btn-primary" data-gate="${u.id}" href="#/u/${u.id}/${steps[si + 1]}">Next: ${STEP_NAMES[steps[si + 1]]} ${I.arrow}</a>`;
   const gateMsg = (step === 'check' && !ready) ? `<p class="small muted gate-msg">${u.check.kind === 'quiz' ? 'Choose the best answer to continue.' : 'Complete the starred items to continue.'}</p>` : '';
   return shell(`
+    <figure class="unit-art">${pic(u.stage, { lazy: false })}</figure>
     <article class="unit">
       <a class="back" href="#/">← Your path</a>
       <p class="eyebrow">Stage ${u.stage} · ${esc(C.STAGES[u.stage].title)} · ${esc(u.id)} · ${u.minutes} min</p>
@@ -289,6 +304,7 @@ function stageDone(s) {
   const nextStage = C.STAGES[s + 1];
   const n = nextUnit();
   return shell(`<div class="panel stage-done">
+    <div class="banner-art">${pic(nextStage ? nextStage.id : 5, { lazy: false })}</div>
     <p class="eyebrow">${I.done} Stage ${s} complete</p>
     <h1>${esc(C.STAGES[s].title)}: done.</h1>
     ${nextStage ? `<p>Stage ${nextStage.id}, <b>${esc(nextStage.title)}</b>, is now open. ${esc(nextStage.blurb)}</p>` : ''}
@@ -303,6 +319,7 @@ function session() {
   const ct = form('contacts');
   const cl = S.checklist || [];
   return shell(`
+    <figure class="unit-art">${pic(3, { lazy: false })}</figure>
     <div class="session">
       <h1>Session mode</h1>
       <p class="muted">Everything you need mid-session. Turn on <b>Red night view</b> (top right) to protect dark adaptation.</p>
@@ -327,6 +344,7 @@ function plan() {
   const fids = ['scope', 'contacts', 'selfcare', ...(S.track === 'tourism' ? ['tourism'] : []), 'segment', 'mission', 'reflection'];
   const notes = units().filter(u => S.notes[u.id]);
   return shell(`
+    <figure class="unit-art">${pic(4, { lazy: false })}</figure>
     <h1>My plan</h1>
     <p class="muted">Everything you have written, in one place. Edit here or in the units. It stays in this browser until you export it.</p>
     <div class="panel row wrap">
@@ -347,6 +365,7 @@ function plan() {
 
 function library() {
   return shell(`
+    <figure class="unit-art">${pic(1, { lazy: false })}</figure>
     <h1>Library</h1>
     <section class="panel"><h2 class="h3">Sky narratives</h2>${C.NARRATIVES.map(n => `<h3 class="h4">${esc(n.title)}</h3><p>${esc(n.body)}</p>`).join('')}
       <p class="small muted">Using a local or cultural sky story? Ask permission where you can, and credit where it comes from.</p></section>
@@ -359,6 +378,7 @@ function record() {
   const d = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
   return shell(`
     <div class="record">
+      <div class="record-art">${pic(5, { lazy: false })}</div>
       <p class="eyebrow">Record of completion</p>
       <h1>${esc(S.name || 'Your name')}</h1>
       <p>completed the self-guided <b>Astronomy for Mental Health Facilitator Course</b> (${esc(C.TRACKS[S.track].label)} track), including trauma-informed practice, ACT foundations, safety and hand-off, five sky activities${S.track === 'tourism' ? ', astro-tourism practice' : ''}, a session design and a first facilitated session with reflection.</p>
